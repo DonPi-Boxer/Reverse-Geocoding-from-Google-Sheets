@@ -1,0 +1,140 @@
+function getAdressFromCooordinates() {
+
+  var ss = SpreadsheetApp.getActiveSheet();
+
+  var colLatitudeIndex = 2;
+  var colLongtitudeIndex = 3;
+
+  var rowStartCoordinatesIndex = 2;
+
+  var rowFirstdressOutputIndex = 2;
+  var colFirstadressOutputIndex = 4;
+
+  var lastrow =   ss.getLastRow();
+  var numofRowsWithCoordinates = lastrow -1;
+
+  Logger.log("Last row containing data is" + lastrow);
+  Logger.log("So the total number of Row containing cooordinates is" + numofRowsWithCoordinates);
+
+
+  var latitudes = ss.getRange(rowStartCoordinatesIndex,colLatitudeIndex,numofRowsWithCoordinates).getValues();
+  var longitudes = ss.getRange(rowStartCoordinatesIndex,colLongtitudeIndex,numofRowsWithCoordinates).getValues();
+
+//  Logger.log("Latitude array is" + latitudes);
+//  Logger.log("Longitude array is" + longitudes);
+
+  // Note: put extra code here: check is latitudes size is longitudes size
+
+  for (i=0; i<latitudes.length; i++) {
+
+    var coordinate = longitudes[i] + "," +  latitudes[i];
+  // Logger.log["Coordinate of this iterations is" + coordinate];
+
+    var reverseGeo = Maps.newGeocoder().reverseGeocode(latitudes[i],longitudes[i]);
+  // Logger.log("Total reverseGeo is" + reverseGeo);
+
+    var adresscomps = reverseGeo.results[0].address_components;
+    Logger.log("Adress components is" + adresscomps);
+
+    var adrescompsCheck = adresscomps.long_name;
+    Logger.log("adress comps check is " + adrescompsCheck);
+
+
+      //Loop through the adresscomps of the current location
+    for (ii in adresscomps) {
+
+      //Current type of adress comp is:
+      var adresscompstype = adresscomps[ii].types;
+
+      //debugger Loger for country
+      Logger.log("Adress comps type is" + adresscompstype);
+
+      //If adress compstype is country --> get the adress comps.long_name, store in VAR
+      if (adresscompstype == "country,political") {
+        var country = adresscomps[ii].long_name;
+
+        //debugger Logger
+      //  Logger.log("Country is" + country);
+
+        ss.getRange(rowFirstdressOutputIndex + i , colFirstadressOutputIndex).setValue(country);
+      }
+
+      if (adresscompstype == "administrative_area_level_1,political") {
+
+        //level 1 is province/govern redion
+        var level1 = adresscomps[ii].long_name;
+
+        //debugger Logger
+      //  Logger.log("Level 1 nu is" + level1);
+
+        ss.getRange(rowFirstdressOutputIndex + i , colFirstadressOutputIndex+1).setValue(level1);
+
+      }
+
+      if (adresscompstype == "administrative_area_level_2,political") {
+
+        //Level 2 is city/muncipilaty
+        var level2 = adresscomps[ii].long_name;
+
+
+        //debugger Logger
+      //  Logger.log("Level 2 nu is" + level2);
+        ss.getRange(rowFirstdressOutputIndex + i , colFirstadressOutputIndex+2).setValue(level2);
+      }
+
+      if (adresscompstype == "political,sublocality,sublocality_level_1") {
+
+        //is city area
+        var level3 = adresscomps[ii].long_name;
+
+
+        //debugger Logger
+      //  Logger.log("neighborhood" + level3);
+        ss.getRange(rowFirstdressOutputIndex + i , colFirstadressOutputIndex+3).setValue(level3);
+      }
+
+      if (adresscompstype == "locality,political") {
+
+        //is city neighborhood
+        var level4 = adresscomps[ii].long_name;
+
+
+        //debugger Logger
+        Logger.log("neighborhood is" + level4);
+        ss.getRange(rowFirstdressOutputIndex + i , colFirstadressOutputIndex+4).setValue(level4);
+      }
+
+
+      if (adresscompstype == "postal_code") {
+
+        var postalCode = adresscomps[ii].long_name;
+
+        //debugger Logger
+      //  Logger.log("Postal code nu is" + postalCode);
+        ss.getRange(rowFirstdressOutputIndex + i , colFirstadressOutputIndex+5).setValue(postalCode);
+      }
+
+      if (adresscompstype == "route") {
+
+        // route is street name
+        var route = adresscomps[ii].long_name;
+
+        //debugger Logger
+      //  Logger.log("route nu is" + route);
+        ss.getRange(rowFirstdressOutputIndex + i , colFirstadressOutputIndex+6).setValue(route);
+
+      }
+
+       if (adresscompstype == "street_number") {
+
+        var streetNumber = adresscomps[ii].long_name;
+
+        //debugger Logger
+      //  Logger.log("Street number nu is" + streetNumber);
+        ss.getRange(rowFirstdressOutputIndex + i , colFirstadressOutputIndex+7).setValue(streetNumber);
+      }
+
+      }
+    Utilities.sleep(1000)
+    }
+  }
